@@ -1,206 +1,247 @@
 import streamlit as st
 import random
-import pandas as pd
 from datetime import datetime, date
 
 # ==========================================
-# 1. 系統設定
+# 1. 系統設定 (太魯閣專屬配置)
 # ==========================================
 st.set_page_config(
-    page_title="2026 馬太鞍部落深度旅遊指南",
-    page_icon="🌿",
+    page_title="太魯閣峽谷深度遊 | 壯麗秘境探索",
+    page_icon="⛰️",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
 # ==========================================
-# 2. CSS 美學 (大地綠/竹林系)
+# 2. CSS 美學 (大理石灰 x 峽谷深綠)
 # ==========================================
 st.markdown("""
     <style>
-    .stApp { background-color: #F4F9F4; font-family: "Microsoft JhengHei", sans-serif; color: #2F4F4F !important; }
-    p, div, span, h1, h2, h3, h4, h5, h6, label, .stMarkdown { color: #2F4F4F !important; }
-    div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, div[data-baseweb="base-input"] {
-        background-color: #ffffff !important; border: 1px solid #A9DFBF !important; color: #2F4F4F !important;
+    /* 全站背景：象徵大理石的淺灰白色 */
+    .stApp {
+        background-color: #F8F9FA;
+        font-family: "Microsoft JhengHei", sans-serif;
+        color: #2C3E50 !important;
     }
-    input, div[data-baseweb="select"] span, li[data-baseweb="option"] { color: #2F4F4F !important; }
-    ul[data-baseweb="menu"] { background-color: #ffffff !important; }
-    svg { fill: #2F4F4F !important; color: #2F4F4F !important; }
+    
+    p, div, span, h1, h2, h3, h4, h5, h6, label, .stMarkdown {
+        color: #2C3E50 !important;
+    }
 
+    /* 深色模式防禦：強制輸入框白底黑字 */
+    div[data-baseweb="select"] > div, 
+    div[data-baseweb="input"] > div, 
+    div[data-baseweb="base-input"] {
+        background-color: #ffffff !important; 
+        border: 1px solid #AAB7B8 !important;
+        color: #2C3E50 !important; 
+    }
+    input { color: #2C3E50 !important; }
+    div[data-baseweb="select"] span { color: #2C3E50 !important; }
+    ul[data-baseweb="menu"] { background-color: #ffffff !important; }
+    li[data-baseweb="option"] { color: #2C3E50 !important; }
+    svg { fill: #2C3E50 !important; color: #2C3E50 !important; }
+
+    /* 日期選單高亮 (立霧溪青水綠) */
     div[data-testid="stDateInput"] > label {
-        color: #1E8449 !important; font-size: 24px !important; font-weight: 900 !important;
-        text-shadow: 0px 0px 5px rgba(46, 204, 113, 0.5); margin-bottom: 10px !important; display: block;
+        color: #117A65 !important; 
+        font-size: 20px !important;
+        font-weight: 900 !important;
+        margin-bottom: 10px !important;
+        display: block;
     }
     div[data-testid="stDateInput"] div[data-baseweb="input"] {
-        border: 3px solid #27AE60 !important; background-color: #EAFAF1 !important;
-        border-radius: 10px !important; box-shadow: 0 0 15px rgba(39, 174, 96, 0.2); 
+        border: 2px solid #1ABC9C !important; 
+        background-color: #E8F8F5 !important;
+        border-radius: 10px !important;
     }
 
-    header {visibility: hidden;} footer {display: none !important;}
+    /* 隱藏官方元件 */
+    header {visibility: hidden;}
+    footer {display: none !important;}
     
+    /* 標題區：峽谷深綠 到 大理石岩壁的漸層 */
     .header-box {
-        background: linear-gradient(135deg, #2E8B57 0%, #81C784 100%); padding: 30px 20px;
-        border-radius: 0 0 30px 30px; color: white !important; text-align: center;
-        margin-bottom: 25px; box-shadow: 0 4px 15px rgba(46, 139, 87, 0.4); margin-top: -60px;
+        background: linear-gradient(135deg, #145A32 0%, #5D6D7E 100%);
+        padding: 35px 20px;
+        border-radius: 0 0 30px 30px;
+        color: white !important;
+        text-align: center;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(20, 90, 50, 0.4);
+        margin-top: -60px;
     }
     .header-box h1, .header-box div, .header-box span { color: white !important; }
-    .header-title { font-size: 28px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
+    .header-title { font-size: 32px; font-weight: bold; letter-spacing: 3px; margin-bottom: 5px;}
+    .header-subtitle { font-size: 15px; color: #D5DBDB !important; font-style: italic; }
     
-    .input-card { background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #D5F5E3; margin-bottom: 20px; }
-    .stButton>button { width: 100%; background-color: #27AE60; color: white !important; border-radius: 50px; border: none; padding: 12px 0; font-weight: bold; transition: 0.3s; font-size: 18px; }
-    .stButton>button:hover { background-color: #1E8449; }
+    /* 卡片模組 */
+    .section-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        border-top: 4px solid #1ABC9C;
+        margin-bottom: 20px;
+    }
     
-    .info-box { background-color: #FEF9E7; border-left: 5px solid #F1C40F; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+    /* 轉換率按鈕 (峽谷大地橘) */
+    .stButton>button {
+        width: 100%;
+        background-color: #D35400; 
+        color: white !important;
+        border-radius: 50px;
+        border: none;
+        padding: 12px 0;
+        font-weight: bold;
+        transition: 0.3s;
+        font-size: 18px;
+        box-shadow: 0 4px 6px rgba(211, 84, 0, 0.3);
+    }
+    .stButton>button:hover { background-color: #E67E22; transform: translateY(-2px); }
     
-    .timeline-item { border-left: 3px solid #2ECC71; padding-left: 20px; margin-bottom: 20px; position: relative; }
-    .timeline-item::before { content: '📍'; position: absolute; left: -11px; top: 0; background: #F4F9F4; border-radius: 50%; font-size: 14px;}
-    .day-header { background: #E8F8F5; color: #0E6655 !important; padding: 5px 15px; border-radius: 15px; display: inline-block; margin-bottom: 15px; font-weight: bold; }
-    .spot-title { font-weight: bold; color: #117864 !important; font-size: 18px; }
-    .spot-tag { font-size: 12px; background: #D5F5E3; color: #196F3D !important; padding: 2px 8px; border-radius: 10px; margin-right: 5px; }
+    /* 導覽時間軸 */
+    .tour-item {
+        border-left: 4px solid #7F8C8D;
+        padding-left: 15px;
+        margin-bottom: 18px;
+        position: relative;
+    }
+    .tour-item::before {
+        content: '⛰️';
+        position: absolute;
+        left: -15px;
+        top: 0;
+        background: #F8F9FA;
+    }
+    .tour-title { font-weight: bold; color: #145A32 !important; font-size: 19px; }
+    .tour-tag { font-size: 12px; background: #EAEDED; color: #34495E !important; padding: 3px 10px; border-radius: 12px; margin-right: 6px; font-weight: bold;}
     
-    .hotel-card { background: #FAFAFA; border-left: 5px solid #D35400; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
-    .hotel-tag { font-size: 11px; background: #E67E22; color: white !important; padding: 2px 6px; border-radius: 8px; margin-right: 5px; }
+    /* 商品網格卡片 */
+    .product-card {
+        background: #FFFFFF;
+        border: 1px solid #BDC3C7;
+        padding: 18px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .product-card:hover { border-color: #1ABC9C; box-shadow: 0 8px 15px rgba(26,188,156,0.15); transform: translateY(-3px);}
+    .product-price { font-size: 20px; color: #C0392B !important; font-weight: 900; margin: 8px 0; }
+    .product-tag { font-size: 11px; background: #E8F8F5; color: #117A65 !important; padding: 3px 8px; border-radius: 8px; font-weight: bold;}
+    .badge { position: absolute; top: 10px; right: -25px; background: #C0392B; color: white !important; font-size: 10px; font-weight: bold; padding: 3px 30px; transform: rotate(45deg); }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. 核心資料庫 (加入經緯度 lat, lon)
+# 3. 核心資料庫 (太魯閣觀光資源：行程與在地特產)
 # ==========================================
-all_spots_db = [
-    # --- 【核心區】馬太鞍部落體驗 ---
-    {"name": "馬太鞍濕地生態園區", "region": "核心", "theme": "生態", "type": "自然", "fee": "免門票", "desc": "花蓮面積最大的生態濕地，湧泉不絕。", "lat": 23.6586, "lon": 121.4182},
-    {"name": "欣綠農園", "region": "核心", "theme": "美食/體驗", "type": "特色", "fee": "依體驗計費", "desc": "體驗「Palakaw」捕魚法與石頭火鍋。", "lat": 23.6588, "lon": 121.4172},
-    {"name": "拉藍的家民宿與文史", "region": "核心", "theme": "文化", "type": "導覽", "fee": "需預約", "desc": "了解阿美族母系社會文化、聽頭目的故事。", "lat": 23.6591, "lon": 121.4190},
-    {"name": "紅瓦屋老地方文化餐廳", "region": "核心", "theme": "美食", "type": "餐廳", "fee": "單點/合菜", "desc": "以原住民藝術木雕裝潢，招牌菜包含鹽烤魚。", "lat": 23.6570, "lon": 121.4160},
-    {"name": "瑪布隆農場", "region": "核心", "theme": "農事", "type": "體驗", "fee": "預約制", "desc": "推廣部落保種運動，體驗採摘特有種黑豆。", "lat": 23.6550, "lon": 121.4150},
-    
-    # --- 【周邊區】光復鄉延伸景點 ---
-    {"name": "花蓮光復糖廠 (漪漣園)", "region": "周邊", "theme": "休閒", "type": "打卡", "fee": "免門票", "desc": "吃傳統冰棒與冰淇淋，感受日式建築風情。", "lat": 23.6598, "lon": 121.4228},
-    {"name": "大農大富平地森林園區", "region": "周邊", "theme": "自然", "type": "單車", "fee": "免門票", "desc": "全國首座平地森林，秋季賞楓、春季賞螢。", "lat": 23.6186, "lon": 121.4147},
-    {"name": "吉利潭", "region": "周邊", "theme": "秘境", "type": "景觀", "fee": "免門票", "desc": "昔日阿美族人祈雨聖地，現為靜謐湖泊秘境。", "lat": 23.6700, "lon": 121.4000},
-    {"name": "太巴塱部落", "region": "周邊", "theme": "文化", "type": "導覽", "fee": "預約制", "desc": "與馬太鞍齊名的大部落，擁有獨特的紅嘴黑鵯傳說。", "lat": 23.6650, "lon": 121.4350},
+tours_db = [
+    {"name": "砂卡礑步道生態漫遊", "type": "輕鬆健行", "duration": "2小時", "fee": "$450", "desc": "沿著清澈的湛藍溪水漫步，步道平緩好走，適合全家大小一同觀察豐富的附生植物與昆蟲生態。"},
+    {"name": "錐麓古道絕壁挑戰", "type": "極限探險", "duration": "5小時", "fee": "$1,200", "desc": "走在海拔700公尺、寬僅90公分的斷崖上，俯瞰太魯閣峽谷的壯麗。需事前申請入山證，挑戰自我首選。"},
+    {"name": "燕子口與九曲洞峽谷奇觀", "type": "經典必遊", "duration": "3小時", "fee": "$600", "desc": "搭乘專車搭配徒步，由專業解說員帶領深入欣賞大理岩峽谷最精華的壺穴地形與斷層奇景。"},
+    {"name": "白楊步道水濂洞探秘", "type": "深度體驗", "duration": "3.5小時", "fee": "$800", "desc": "穿過多個隧道，感受獨特的水濂洞天然水柱 SPA，並欣賞壯闊的白楊瀑布與吊橋風光。"}
 ]
 
-hotels_db = [
-    {"name": "光復糖廠日式木屋", "region": "周邊", "tag": "日式風情", "price": 3500, "desc": "全台唯一全日式百年檜木聚落。"},
-    {"name": "欣綠農園石頭屋民宿", "region": "核心", "tag": "深度體驗", "price": 2800, "desc": "住在濕地中央，夜晚伴隨蛙鳴入睡。"},
-    {"name": "拉藍的家", "region": "核心", "tag": "文化交流", "price": 2000, "desc": "體驗阿美族家庭的熱情，適合深度旅人。"}
+products_db = [
+    {"name": "天然玫瑰石手工項鍊", "category": "在地工藝", "price": 1280, "icon": "💎", "desc": "嚴選花蓮特產玫瑰石，每一塊都有獨特的天然山水紋理，純手工打磨鑲嵌。", "hot": True},
+    {"name": "太魯閣族傳統圖騰編織包", "category": "文化創生", "price": 850, "icon": "🎒", "desc": "由部落婦女手工編織，使用傳統苧麻材質與祖靈之眼圖騰，兼具文化傳承與實用性。", "hot": False},
+    {"name": "花蓮蜜香紅茶禮盒", "category": "在地好味", "price": 600, "icon": "🍵", "desc": "經小綠葉蟬叮咬後產生天然蜜香，無毒農法栽種，茶湯溫潤回甘。", "hot": True},
+    {"name": "馬告風味剝皮辣椒", "category": "在地好味", "price": 250, "icon": "🌶️", "desc": "融合原住民特有香料「馬告」（山胡椒），微辣中帶有獨特的檸檬香茅氣息。", "hot": False},
+    {"name": "大理石紋高質感杯墊組", "category": "在地工藝", "price": 499, "icon": "🪨", "desc": "利用太魯閣邊角大理岩材製作，質地冰涼吸水性佳，將峽谷的記憶留在桌面上。", "hot": True},
+    {"name": "山林舒緩馬告精油", "category": "舒壓香氛", "price": 980, "icon": "🌿", "desc": "萃取高山馬告精華，適合健行後按摩舒緩肌肉疲勞，帶給您森林般的清新感受。", "hot": False}
 ]
 
 # ==========================================
-# 4. 邏輯核心：動態行程生成演算法
+# 4. 邏輯核心：精準推薦系統
 # ==========================================
-def generate_dynamic_itinerary(travel_date, days_str, group):
-    m = travel_date.month
-    core_spots = [s for s in all_spots_db if s['region'] == "核心"]
-    surround_spots = [s for s in all_spots_db if s['region'] == "周邊"]
-    
-    if "一日" in days_str: day_count = 1
-    elif "二日" in days_str: day_count = 2
-    else: day_count = 3
-    
-    itinerary = {}
-    
-    # Day 1: 核心體驗
-    d1_s1 = next(s for s in core_spots if s['name'] == "馬太鞍濕地生態園區")
-    d1_s2 = next(s for s in core_spots if s['name'] == "欣綠農園") 
-    d1_s3 = next(s for s in core_spots if s['name'] == "拉藍的家民宿與文史") 
-    if group == "親子家庭":
-        d1_s3 = next(s for s in core_spots if s['name'] == "瑪布隆農場") 
-    itinerary[1] = [d1_s1, d1_s2, d1_s3][:2] 
-    
-    # Day 2: 延伸周邊
-    if day_count >= 2:
-        d2_s1 = next(s for s in surround_spots if s['name'] == "大農大富平地森林園區")
-        d2_s2 = next(s for s in surround_spots if s['name'] == "花蓮光復糖廠 (漪漣園)")
-        itinerary[2] = [d2_s1, d2_s2]
-
-    # Day 3: 秘境與太巴塱
-    if day_count == 3:
-        d3_s1 = next(s for s in surround_spots if s['name'] == "吉利潭")
-        d3_s2 = next(s for s in surround_spots if s['name'] == "太巴塱部落")
-        itinerary[3] = [d3_s1, d3_s2]
-
-    if m in [3, 4]: status_title = "✨ 春季限定：螢火蟲與濕地綠意"
-    elif m in [7, 8]: status_title = "🌾 豐年祭 (Ilisin) 熱血祭典季"
-    else: status_title = "🌿 阿美族生態智慧深度漫遊"
-    
-    return status_title, itinerary
+def recommend_tours(group):
+    if group == "親子家庭 (帶小孩/長輩)":
+        return [t for t in tours_db if t['name'] in ["砂卡礑步道生態漫遊", "燕子口與九曲洞峽谷奇觀"]]
+    elif group == "戶外極限玩家":
+        return [t for t in tours_db if t['name'] in ["錐麓古道絕壁挑戰", "白楊步道水濂洞探秘"]]
+    elif group == "情侶約會/攝影愛好":
+        return [t for t in tours_db if t['name'] in ["燕子口與九曲洞峽谷奇觀", "白楊步道水濂洞探秘"]]
+    else: # 一人慢遊 或 其他
+        return tours_db[:3]
 
 # ==========================================
 # 5. 頁面內容
 # ==========================================
 st.markdown("""
     <div class="header-box">
-        <div class="header-title">🌿 2026 馬太鞍部落觀光指南</div>
-        <div class="header-subtitle">Nga'ay ho！探索 Fataan 生態與阿美族文化</div>
+        <div class="header-title">⛰️ 太魯閣峽谷深度遊</div>
+        <div class="header-subtitle">鬼斧神工的大自然傑作 • 您的專屬峽谷嚮導</div>
     </div>
 """, unsafe_allow_html=True)
 
+# --- 區塊 1：導覽預約模組 ---
+st.markdown("### 🗺️ 規劃您的峽谷探險")
 with st.container():
-    st.markdown('<div class="input-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        travel_date = st.date_input("📅 抵達日期 (必填)", value=date(2026, 7, 15))
+        visit_date = st.date_input("📅 預計入山日期", value=date.today())
     with col2:
-        days_str = st.selectbox("🕒 停留天數", ["一日遊 (深度探索)", "二日遊 (部落住一晚)", "三日遊 (光復全境)"])
-        group = st.selectbox("👥 旅客類型", ["情侶/夫妻", "親子家庭", "長輩同行", "熱血獨旅"])
+        group = st.selectbox("👥 您的同行旅伴", ["情侶約會/攝影愛好", "親子家庭 (帶小孩/長輩)", "戶外極限玩家", "一人慢遊"])
     
-    if st.button("🚀 生成部落專屬行程"):
-        st.session_state['generated'] = True
+    if st.button("🔍 尋找適合的秘境路線"):
+        st.session_state['show_tours'] = True
     st.markdown('</div>', unsafe_allow_html=True)
 
-if st.session_state.get('generated'):
-    status_title, itinerary = generate_dynamic_itinerary(travel_date, days_str, group)
-    
-    st.markdown(f"""
-    <div class="info-box">
-        <h4>{status_title}</h4>
-        <p>為您規劃 <b>{travel_date.strftime('%Y/%m/%d')}</b> 展開的 <b>{group}</b> 永續生態之旅！</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # 收集所有行程點的經緯度以便畫圖
-    map_data_list = []
-
-    # --- 顯示行程 ---
-    for day, spots in itinerary.items():
-        st.markdown(f'<div class="day-header">Day {day}</div>', unsafe_allow_html=True)
-        
-        for i, spot in enumerate(spots):
-            time_label = "☀️ 上午" if i == 0 else "🌤️ 下午"
-            
-            # 將景點加入地圖清單
-            map_data_list.append({"lat": spot["lat"], "lon": spot["lon"], "name": spot["name"]})
-            
-            tags_html = f'<span class="spot-tag">{spot["type"]}</span><span class="spot-tag">{spot["theme"]}</span>'
-            if spot['region'] == "核心": 
-                tags_html += '<span class="spot-tag" style="background:#FAD7A1;color:#A04000!important;">馬太鞍境內</span>'
-            
-            st.markdown(f"""
-            <div class="timeline-item">
-                <div class="spot-title">{time_label}：{spot['name']}</div>
-                <div style="margin: 5px 0;">{tags_html}</div>
-                <div style="font-size: 14px; color: #555;">💰 {spot['fee']} <br>📝 {spot['desc']}</div>
+if st.session_state.get('show_tours'):
+    st.markdown(f"**為「{group}」推薦的專屬行程：**")
+    recs = recommend_tours(group)
+    for tour in recs:
+        st.markdown(f"""
+        <div class="tour-item">
+            <div class="tour-title">{tour['name']}</div>
+            <div style="margin: 6px 0;">
+                <span class="tour-tag">⏱️ {tour['duration']}</span>
+                <span class="tour-tag">💰 {tour['fee']}/人</span>
+                <span class="tour-tag" style="background:#E8F8F5; color:#117A65!important;">{tour['type']}</span>
             </div>
-            """, unsafe_allow_html=True)
+            <div style="font-size: 14px; color: #555; line-height: 1.5;">{tour['desc']}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # --- 🗺️ 動態產生行程路線圖 ---
-    st.markdown("### 🗺️ 本次行程打卡地圖")
-    if map_data_list:
-        # 將清單轉換為 pandas DataFrame 給 st.map 使用
-        df_map = pd.DataFrame(map_data_list)
-        # 顯示地圖，點的大小會自動依畫面縮放，顏色會抓取系統預設值
-        st.map(df_map, zoom=12, use_container_width=True)
-        st.caption("📍 地圖上的標記代表您本次行程預計前往的地點 (可縮放移動)")
+# --- 區塊 2：太魯閣伴手禮市集 ---
+st.markdown("---")
+st.markdown("### 🛍️ 太魯閣紀念品市集")
+st.markdown("<p style='font-size:14px; color:#7F8C8D;'>將大自然的鬼斧神工與原民部落的溫暖手作帶回家。</p>", unsafe_allow_html=True)
 
-    # --- 住宿推薦 ---
-    if "一日" not in days_str:
-        st.markdown("### 🛖 部落與周邊推薦住宿")
-        for h in random.sample(hotels_db, min(3, len(hotels_db))):
-            st.markdown(f"""
-            <div class="hotel-card">
-                <div style="font-weight:bold; color:#B9770E;">{h['name']} <span class="hotel-tag">{h['tag']}</span></div>
-                <div style="font-size:13px; color:#666; margin-top:3px;">💲 {h['price']}起 | {h['desc']}</div>
-            </div>
-            """, unsafe_allow_html=True)
+category_filter = st.radio("商品分類", ["全部", "🪨 在地工藝/文化", "🍽️ 嚴選在地好味", "🌿 舒壓香氛"], horizontal=True)
+
+filtered_products = products_db
+if category_filter == "🪨 在地工藝/文化":
+    filtered_products = [p for p in products_db if p['category'] in ["在地工藝", "文化創生"]]
+elif category_filter == "🍽️ 嚴選在地好味":
+    filtered_products = [p for p in products_db if p['category'] == "在地好味"]
+elif category_filter == "🌿 舒壓香氛":
+    filtered_products = [p for p in products_db if p['category'] == "舒壓香氛"]
+
+cols = st.columns(2)
+for i, product in enumerate(filtered_products):
+    with cols[i % 2]:
+        badge_html = '<div class="badge">熱銷</div>' if product.get('hot') else ''
+        st.markdown(f"""
+        <div class="product-card">
+            {badge_html}<div style="font-size: 35px; margin-bottom:10px;">{product['icon']}</div>
+            <span class="product-tag">{product['category']}</span>
+            <div style="font-weight: 900; color: #2C3E50; margin-top: 10px; font-size:16px;">{product['name']}</div>
+            <div class="product-price">NT$ {product['price']}</div>
+            <div style="font-size: 13px; color: #757575; margin-top: 8px; line-height:1.4;">{product['desc']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# --- 頁尾：導引購買與聯絡 ---
+st.markdown("""
+<div style="text-align:center; margin-top:40px; padding:25px; background: linear-gradient(180deg, #F8F9FA 0%, #EAEDED 100%); border-radius:15px; border: 1px solid #BDC3C7;">
+    <h4 style="color:#145A32 !important; font-weight:bold; margin-bottom:10px;">預約行程 / 購買紀念品</h4>
+    <p style="font-size:14px; color:#5D6D7E; margin-bottom:25px;">部分古道需提前申請入園證，歡迎直接聯繫專屬嚮導為您代辦與規劃。</p>
+    <a href="https://lin.ee/您的專屬網址" target="_blank" style="text-decoration: none; display: inline-block; background-color:#00C300; color:white; border:none; padding:12px 30px; border-radius:50px; font-weight:900; font-size: 16px; box-shadow: 0 4px 10px rgba(0, 195, 0, 0.3); cursor:pointer;">💬 加入官方 LINE 預約</a>
+</div>
+""", unsafe_allow_html=True)
